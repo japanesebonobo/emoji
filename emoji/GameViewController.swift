@@ -1,50 +1,57 @@
-//
-//  GameViewController.swift
-//  emoji
-//
-//  Created by 吉冨優太 on 2019/08/27.
-//  Copyright © 2019 吉冨優太. All rights reserved.
-//
-
 import UIKit
 import SpriteKit
-import GameplayKit
+import ARKit
 
-class GameViewController: UIViewController {
-
+class GameViewController: UIViewController, ARSKViewDelegate {
+    
+    var sceneView:ARSKView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
-            if let scene = SKScene(fileNamed: "GameScene") {
-                // Set the scale mode to scale to fit the window
-                scene.scaleMode = .aspectFill
-                
-                // Present the scene
-                view.presentScene(scene)
-            }
-            
-            view.ignoresSiblingOrder = true
-            
-            view.showsFPS = true
-            view.showsNodeCount = true
+        sceneView = self.view as! ARSKView
+        
+        sceneView.delegate = self
+        sceneView.showsFPS = true
+        sceneView.showsNodeCount = true
+        
+        if let scene = SKScene(fileNamed: "GameScene") {
+            sceneView.presentScene(scene)
         }
     }
-
-    override var shouldAutorotate: Bool {
-        return true
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        let configuration = ARWorldTrackingConfiguration()
+        
+        sceneView.session.run(configuration)
     }
-
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            return .allButUpsideDown
-        } else {
-            return .all
-        }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        sceneView.session.pause()
     }
-
-    override var prefersStatusBarHidden: Bool {
-        return true
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
     }
+    
+    // MARK: - ARSKViewDelegate
+    
+    func view(_ view: ARSKView, nodeFor anchor: ARAnchor) -> SKNode? {
+        let spriteNode = SKSpriteNode(imageNamed: "art.scnassets/sword.png")
+        spriteNode.xScale = 0.25
+        spriteNode.yScale = 0.25
+        
+        let returnNode = SKSpriteNode()
+        returnNode.addChild(spriteNode)
+        return returnNode;
+    }
+    
+    func session(_ session: ARSession, didFailWithError error: Error) {}
+    func sessionWasInterrupted(_ session: ARSession) {}
+    func sessionInterruptionEnded(_ session: ARSession) {}
 }
+
